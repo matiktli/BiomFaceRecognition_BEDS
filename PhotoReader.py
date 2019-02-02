@@ -22,6 +22,8 @@ def main():
         if (file.endswith('.jpg')):
             label  = file[5:7]
             img = Image.open(DATA_PATH + '/' + file).resize(IMG_SIZE)
+            possibleColors = groupColorRangesIntoNGroups(img, 8)
+            print(possibleColors)
             imageVector = convertImageToVector(img)
             labelName = savePhotoToNewFolder(img, label, DATA_SORTED_PATH)
             VECTORS[fileCounter][0] = labelName
@@ -52,7 +54,37 @@ def savePhotoToNewFolder(img, label, dirToSave):
     img.save(dirToSave + '/' + label + '/' + newName + '.jpg', 'JPEG')
     return newName
 
+def reduceImageColorsToTwo(image):
+    pixels = image.load()
+    for i in range(image.size[0]):
+        for j in range(image.size[1]):
+            pixelVal = pixels[i,j]
+            idx = int(255/2)
+            if pixelVal >= idx:
+                pixelVal = 255
+            else:
+                pixelVal = 0
+            pixels[i,j] = pixelVal
 
+def groupColorRangesIntoNGroups(image, shape):
+    dx = int(255/shape)
+    possibleColors = [u*dx for u in range(shape)]
+    pixels = image.load()
+    for i in range(image.size[0]):
+        for j in range(image.size[1]):
+            pixelVal = pixels[i,j]
+            tmpVal = pixelVal
+            for p in range(shape):
+                if pixelVal >= p*dx and pixelVal <= (p+1)*dx:
+                    tmpVal = p*dx
+            pixels[i,j] = pixelVal
+    return possibleColors
+
+def findFirstFreeIdxInArray(coll):
+    for z in range(coll.__len__()):
+        if coll[z] == -1:
+            return z
+    return 0
 
 if __name__ == '__main__':
     main()
