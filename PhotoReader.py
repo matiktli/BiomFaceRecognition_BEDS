@@ -5,7 +5,7 @@ import os
 import csv
 
 DATA_PATH = '../data'
-IMG_SIZE = 64,64
+IMG_SIZE = 32,32
 DATA_SORTED_PATH = DATA_PATH + '/data_sorted_' + IMG_SIZE[0].__str__() + '_' + IMG_SIZE[1].__str__()
 VETOR_SIZE = IMG_SIZE[0] * IMG_SIZE[1]
 IMG_NUMBER = 1500
@@ -48,8 +48,8 @@ def savePhotoToNewFolder(img, label, dirToSave):
     num = os.listdir(pathToCreate).__len__() + 1
     if num < 10:
         num = '0' + num.__str__()
-    newName = label + '_' + num.__str__() + '.jpg'
-    img.save(dirToSave + '/' + label + '/' + newName, 'JPEG')
+    newName = label + '_' + num.__str__()
+    img.save(dirToSave + '/' + label + '/' + newName + '.jpg', 'JPEG')
     return newName
 
 
