@@ -1,22 +1,22 @@
 #! /usr/bin/env python
-import tensorflow as tf
 import csv
 import numpy as np
+import matplotlib.pyplot as plt
+import TensorService as tenUtil
 
 IMG_SIZE = 32,32
 IMG_NUMBER = 1500
 VECTOR_SIZE = IMG_SIZE[0] * IMG_SIZE[1]
 FILE_PATH = '../data/face-data-' + IMG_SIZE[0].__str__() + '-' + IMG_SIZE[1].__str__() + '.csv'
-DATA_SPLIT_PROP = 0.8
-
+DATA_SPLIT_PROP = 0.8 # X * IMG_NUMBER = train_data
 
 def main():
+	tfServ = tenUtil.TensorService();
 	vectorsAndLables = readFileToNpArray(FILE_PATH)
 	np.random.shuffle(vectorsAndLables)
 	train_data, test_data = splitDataset(vectorsAndLables, DATA_SPLIT_PROP, IMG_NUMBER)
-	print(train_data.__len__())
-	print(test_data.__len__())
-
+	with tfServ.SESSION as sess:
+		pass
 	pass
 
 
