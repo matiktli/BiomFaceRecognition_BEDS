@@ -11,14 +11,12 @@ FILE_PATH = '../data/face-data-' + IMG_SIZE[0].__str__() + '-' + IMG_SIZE[1].__s
 DATA_SPLIT_PROP = 0.8 # X * IMG_NUMBER = train_data
 
 def main():
-	tfServ = tenUtil.TensorService(IMG_SIZE);
+	tfServ = tenUtil.TensorService(IMG_SIZE)
 	vectorsAndLables = readFileToNpArray(FILE_PATH)
 	np.random.shuffle(vectorsAndLables)
 	train_data, test_data = splitDataset(vectorsAndLables, DATA_SPLIT_PROP, IMG_NUMBER)
-	with tfServ.SESSION as sess:
-		pass
-	pass
 
+	pass
 
 def readFileToNpArray(pathToFile):
 	result = np.empty((IMG_NUMBER, VECTOR_SIZE + 1))
