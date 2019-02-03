@@ -8,7 +8,7 @@ DATA_PATH = '../data'
 IMG_SIZE = 32,32
 DATA_SORTED_PATH = DATA_PATH + '/data_sorted_' + IMG_SIZE[0].__str__() + '_' + IMG_SIZE[1].__str__()
 VETOR_SIZE = IMG_SIZE[0] * IMG_SIZE[1]
-IMG_NUMBER = 1500
+IMG_NUMBER = 30*50
 FILE_VECTOR_NAME = 'face-data'
 VECTORS = [[0 for x in range(VETOR_SIZE+1)] for y in range(IMG_NUMBER)]
 
@@ -18,15 +18,22 @@ def main():
         raise ValueError('DATA CORRUPTED, DROP \'' + DATA_SORTED_PATH + '\' folder.')
     else:
         os.makedirs(DATA_SORTED_PATH)
+
+    foundLabelsCounter=0
+    foundLabels = [None for _ in range(30)]
     for file in os.listdir(DATA_PATH):
         if (file.endswith('.jpg')):
             label  = file[5:7]
             img = Image.open(DATA_PATH + '/' + file).resize(IMG_SIZE)
             possibleColors = groupColorRangesIntoNGroups(img, 8)
-            print(possibleColors)
             imageVector = convertImageToVector(img)
-            labelName = savePhotoToNewFolder(img, label, DATA_SORTED_PATH)
-            VECTORS[fileCounter][0] = labelName
+            if label not in foundLabels:
+                foundLabels[foundLabelsCounter] = label
+                foundLabelsCounter+=1
+            newId = foundLabels.index(label)
+            labelName = savePhotoToNewFolder(img, newId, DATA_SORTED_PATH)
+            
+            VECTORS[fileCounter][0] = newId
             for i in range(VETOR_SIZE):
                 VECTORS[fileCounter][i+1] = imageVector[i]
             #VECTORS.append(imageVector)
@@ -44,6 +51,10 @@ def writeVectorsToFile(allVectors):
         writer.writerows(allVectors)
 
 def savePhotoToNewFolder(img, label, dirToSave):
+    if label < 10:
+        label = '0' + label.__str__()
+    else:
+        label = label.__str__()
     pathToCreate = dirToSave + '/' + label
     if not os.path.exists(pathToCreate):
         os.makedirs(pathToCreate)
@@ -77,7 +88,7 @@ def groupColorRangesIntoNGroups(image, shape):
             for p in range(shape):
                 if pixelVal >= p*dx and pixelVal <= (p+1)*dx:
                     tmpVal = p*dx
-            pixels[i,j] = pixelVal
+            pixels[i,j] = tmpVal
     return possibleColors
 
 def findFirstFreeIdxInArray(coll):
