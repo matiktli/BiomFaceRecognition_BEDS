@@ -6,7 +6,7 @@ import Logger as lg
 
 class TensorService():
 
-	def __init__(self, imageSize):
+	def __init__(self, collector, imageSize):
 		self.LOG = lg.Logger('tf-svc')
 		self.SESSION = tf.Session()
 		self.hidden_layer_n_nodes = [500,500]
@@ -16,11 +16,14 @@ class TensorService():
 		self.imageS = int(self.imageX * self.imageY)
 
 		self.n_classes = 30 #num of people? idk now
-		self.batch_size = 90
-		self.n_steps = 30
+		self.batch_size = self.n_classes * 3 #size of test portion
+		self.n_steps = 3
 
 		self.x = tf.placeholder('float', [None, self.imageS])
 		self.y = tf.placeholder('float')
+		self.COL = collector
+		self.COL._set_w_max(self.n_steps)
+
 
 
 	# definitin of computation graph
@@ -97,7 +100,7 @@ class TensorService():
 				step_loss = 0
 
 				i = 0
-				while i < len(train_x):
+				while i <= len(train_x):
 					start = i
 					end = i+self.batch_size
 
@@ -107,45 +110,65 @@ class TensorService():
 
 					# we are optimizing cost by x and y, we are doing this by modyfing layers weights in tensorflow
 					_, c = sess.run([optimizer, cost], feed_dict={self.x: batch_x, self.y: batch_y})
+					# plot here
+					self.COL.addSingleSample(step, start, end, step_loss+c)
+					#if (i % (self.batch_size/10)) == 0:
+					#	 self.LOG.log("	 Samples {}-{}. Loss {}".format(start, end, step_loss+c), 'samples', 'TRAINING')
 					step_loss += c
 					i += self.batch_size
 				percentage = int((step/self.n_steps)*100)
 				self.LOG.log("Completed {}%. On step no.{}, with loss: {}".format(percentage, step, step_loss), 'step', 'TRAINING')
-
+				if i == 0:
+					self.COL._set_h_max(step_loss+300)
+				if i == len(train_x):
+					self.COL_set_h_max(step_loss-300)
+				self.COL.addAfterStepSample(step, step_loss)
 			# we are asserting that both values are identical (this is not what i want i think -,- but lets see what will happen)
+			
 			correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(self.y, 1))
-
 			accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
-			self.LOG.log('Accuracy: {}%.'.format(accuracy.eval({self.x: test_x, self.y: test_y}) * 100), 'acc', 'RESULT')
+
+
+			pred = tf.argmax(prediction, 1)
+			actual = tf.argmax(self.y, 1)
+			#TODO
+			accAsNumber = accuracy.eval({self.x: test_x, self.y: test_y}) * 100
+			self.COL.addAccuraccy(accAsNumber)
+			self.LOG.log('Accuracy: {}%.'.format(accAsNumber), 'accuraccy', 'RESULT')
+			self.COL.savePlot()
+
 
 	# 0.8 -> 80% of data is prepared for training and 20% for testing
 	def prepare_data_for_algorithm(self, all_data_input, proportion=0.8):
-		#np.random.shuffle(all_data_input)
+		np.random.shuffle(all_data_input)
 		idx = int(all_data_input.__len__()*proportion)
 		train_x_y = all_data_input[:idx, :]
 		test_x_y = all_data_input[idx:,:]
 		train_x, train_y = self.extract_labels_from_data(train_x_y)
 		test_x, test_y = self.extract_labels_from_data(train_x_y)
-		# change into vectors one hot
+		
 		train_y = self.vectorize_labels(train_y)
 		test_y = self.vectorize_labels(test_y)
 
 		self.LOG.log('Prepared data. Train: {} records, Test: {} records.'.format(train_x.__len__(), test_x.__len__()), 'form', 'PREP DATA')
 		return train_x, train_y, test_x, test_y
 
+
 	def extract_labels_from_data(self, data):
 		data_x = data[:, [i for i in range(1, data[0].__len__())]] # 1 -> since first column is label
 		data_y = data[:,0]
 		return data_x, data_y
 
+	# change into vectors one hot
 	def vectorize_labels(self, labels):
 		res = [[None for _ in range(self.n_classes)] for _ in range(labels.__len__())]
 		for i in range(labels.__len__()):
 			res[i] = self.change_single_label_to_vector(labels[i])
 		return res
 
+
 	def change_single_label_to_vector(self, label):
-		vect = [None for _ in range(self.n_classes)]
+		vect = [0 for _ in range(self.n_classes)]
 		for i in range(self.n_classes):
 			if i == int(label):
 				vect[i] = 1

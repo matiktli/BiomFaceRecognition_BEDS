@@ -1,8 +1,9 @@
 #! /usr/bin/env python
 import csv
 import numpy as np
-import matplotlib.pyplot as plt
 import TensorService as tenUtil
+import Collector as col
+
 
 IMG_SIZE = (32,32)
 IMG_NUMBER = 1500
@@ -10,7 +11,8 @@ VECTOR_SIZE = IMG_SIZE[0] * IMG_SIZE[1]
 FILE_PATH = '../data/face-data-' + IMG_SIZE[0].__str__() + '-' + IMG_SIZE[1].__str__() + '.csv'
 
 def main():
-	tfServ = tenUtil.TensorService(IMG_SIZE)
+	COL = col.Collector()
+	tfServ = tenUtil.TensorService(COL, IMG_SIZE)
 	vectorsAndLables = readFileToNpArray(FILE_PATH)
 	tfServ.train_neural_network(vectorsAndLables)
 	pass
