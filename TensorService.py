@@ -9,7 +9,7 @@ class TensorService():
 	def __init__(self, imageSize):
 		self.LOG = lg.Logger('tf-svc')
 		self.SESSION = tf.Session()
-		self.hidden_layer_n_nodes = [500, 300, 400]
+		self.hidden_layer_n_nodes = [500,500]
 		
 		self.imageX = imageSize[0]
 		self.imageY = imageSize[1]
@@ -17,7 +17,7 @@ class TensorService():
 
 		self.n_classes = 30 #num of people? idk now
 		self.batch_size = 90
-		self.n_steps = 10
+		self.n_steps = 30
 
 		self.x = tf.placeholder('float', [None, self.imageS])
 		self.y = tf.placeholder('float')
